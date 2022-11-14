@@ -81,23 +81,28 @@ def rollout(env):
     return states, controls, total_reward
 
 
-def play(env, seed, save=False):
-    env.seed(seed)
-    env.render()
-    env.unwrapped.viewer.window.on_key_press = key_press
-    env.unwrapped.viewer.window.on_key_release = key_release
+def play(env, n_runs, seed, save=False):
+    names = []
 
     print("ACTIONS={}".format(ACTIONS))
     print("Press keys 1 2 3 ... to take actions 1 2 3 ...")
     print("No keys pressed is taking action 0")
 
-    states, controls, total_reward = rollout(env)
-    if save:
-        name = str(time.time())
-        with open('data/gym-' + str(name) + ".pickle", 'wb') as f:
-            pickle.dump((controls, states), f)
-        return name
-    return states, controls, total_reward
+    for i in range(n_runs):
+        env.seed(seed)
+        env.render()
+        env.unwrapped.viewer.window.on_key_press = key_press
+        env.unwrapped.viewer.window.on_key_release = key_release
+        states, controls, total_reward = rollout(env)
+        if save:
+            name = str(time.time())
+            with open('data/gym-' + str(name) + ".pickle", 'wb') as f:
+                pickle.dump((controls, states), f)
+            names.append(name)
+        else:
+            names.append(states, controls, total_reward)
+    
+    return names
 
 
 def play_rand(env, n_runs, seed, save=False):
