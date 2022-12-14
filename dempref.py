@@ -12,10 +12,13 @@ import query_generation
 import sampling
 import glob
 
+from keyboard_agent import play
+
 env = gym.make('LunarLander-v2')
 #timesteps not included yet
 
 ### Parameters
+N_DEMOS = 3
 N_QUERY = 2
 UPDATE_FUNC = "approx"
 QUERY_LENGTH = 10
@@ -53,7 +56,11 @@ def run() -> pd.DataFrame:
 
     ### Creating human object
     H = human.TerminalHuman(env, UPDATE_FUNC)
-    ### Collecting and loading demonstrations
+    
+    ### Collecting demonstrations
+    demo_files = play(env, 30, 0, True)
+    
+    ### loading demonstrations
     # demo_names = DOM.collect_dems()
     demo_path = 'data/dem_pref_demos/'
     demo_names = glob.glob(f"{demo_path}/gym-*.pickle")

@@ -64,7 +64,7 @@ def np_features(t, dempref = False):
     return lst_of_features
 
 
-def watch(env, controls, seed: int = None, render:bool=True):
+def watch(env, controls, seed: int = 0, render:bool=True):
     if len(controls) > 0:
         start = time.time()
         # mapping = {1: [0, -1], 2: [1, 0], 3: [0, 1], 0: [0, 0]}
@@ -87,7 +87,7 @@ def watch2(env, controls, seed:int=None, render:bool=True):
     
     for i in range(len(controls)):
         if render:
-            frame_delay_ms = 0.1
+            frame_delay_ms = 20
             time.sleep(frame_delay_ms/1000)
             env.render()
         a = controls[i]#[0]
@@ -103,8 +103,8 @@ def watch2(env, controls, seed:int=None, render:bool=True):
                 print(f"{i}: {reward}")
                 break
         except:
+            print(f"invalid action {a}")
             continue
-            # print(f"invalid action {a} --> {int(np.floor(a))}")
         #print(self.state)
             
     env.close()
@@ -158,7 +158,7 @@ def dempref_run(env: gym.Env,  controls: np.ndarray, time_steps: int = 150, rend
     else:
         c = np.append(c, [np.zeros(control_size)], axis=0)
         
-    if debug: print(f"reward: {reward}\n")
+    print(f"reward: {reward}\n")
     return (s, np.array([c]))
 
     

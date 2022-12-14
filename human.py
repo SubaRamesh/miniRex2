@@ -46,7 +46,7 @@ class Human(object):
 
 Terminal_TRAJECTORY_PROMPT          = "Trajectory #"
 Terminal_SELECTED_TRAJECTORY_PROMPT = "Your Selected Trajectory # [1,...,%d]:"
-Terminal_RANKING_PROMPT = "Your Ranking of the Trajectories [1,...,%d]: (e.g. (2, 3, 1) means Trajectory 3 is your most" \
+Terminal_RANKING_PROMPT = "Your Ranking of the Trajectories [1,...,%d]: (e.g. (3, 1, 2) means Trajectory 3 is your most" \
                           " preferred, followed by Trajectory 1, and then lastly, 2.)\n"
 
 class TerminalHuman(Human):
@@ -97,8 +97,9 @@ class TerminalHuman(Human):
                 dempref_run(self.domain, controls, render=True)
             else:
                 # formatting from demos, should be list of [x]s
-                controls = queries[index - 1][0]
-                watch(self.domain, controls)
+                controls = queries[index - 1]
+                print(controls)
+                watch(self.domain, controls, render=True)
             
             self.domain.reset()
         print('\n')

@@ -41,6 +41,7 @@ def key_release(key, mod):
 
 def rollout(env):
     global human_agent_action, human_wants_restart, human_sets_pause
+    human_agent_action = 0
     human_wants_restart = False
     obser = env.reset()
 
@@ -87,8 +88,11 @@ def play(env, n_runs, seed, save=False):
     print("ACTIONS={}".format(ACTIONS))
     print("Press keys 1 2 3 ... to take actions 1 2 3 ...")
     print("No keys pressed is taking action 0")
-
+    
+    time.sleep(1)
+    
     for i in range(n_runs):
+        time.sleep(1)
         env.seed(seed)
         env.render()
         env.unwrapped.viewer.window.on_key_press = key_press
@@ -100,7 +104,7 @@ def play(env, n_runs, seed, save=False):
                 pickle.dump((controls, states, total_reward), f)
             names.append(name)
         else:
-            names.append(states, controls, total_reward)
+            names.append((states, controls, total_reward))
     
     return names
 
