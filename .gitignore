@@ -1,7 +1,9 @@
 data-rand/*
+data/*
+*.pickle
 
 # Other GitHub Repos
-baselines/baselines/
+baselines/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
