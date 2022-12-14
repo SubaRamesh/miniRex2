@@ -111,7 +111,7 @@ def watch2(env, controls, seed:int=None, render:bool=True):
     
     return features
 
-def dempref_run(env: gym.Env,  controls: np.ndarray, time_steps: int = 150, render: bool = False, seed: int = 0):
+def dempref_run(env: gym.Env,  controls: np.ndarray, time_steps: int = 150, render: bool = False, seed: int = 0, debug: bool = False):
     control_size = 1
     c = np.array([[0.] * control_size] * time_steps)
     num_intervals = len(controls)//control_size # 8
@@ -124,7 +124,7 @@ def dempref_run(env: gym.Env,  controls: np.ndarray, time_steps: int = 150, rend
         c[i * interval_length: (i + 1) * interval_length] = [controls[j + i] for i in range(control_size)]
         j += control_size
 
-    print(f"controls ({len(c)}): \n{[int(np.floor(x))for x in c]}")
+    if debug: print(f"controls ({len(c)}): \n{[int(np.floor(x))for x in c]}")
 
     env.seed(seed)
     obser = env.reset()
@@ -158,7 +158,7 @@ def dempref_run(env: gym.Env,  controls: np.ndarray, time_steps: int = 150, rend
     else:
         c = np.append(c, [np.zeros(control_size)], axis=0)
         
-    print(f"reward: {reward}\n")
+    if debug: print(f"reward: {reward}\n")
     return (s, np.array([c]))
 
     

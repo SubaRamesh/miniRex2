@@ -227,7 +227,7 @@ class ApproxQueryGenerator(object):
                 weighted_feature_diff = np.sum(np.dot(feature_diff, samples.T))/samples.shape[0] # 1 x 1 -- summed across samples
                 v_removed = 1. - np.minimum(1., np.exp(self.beta_pref * weighted_feature_diff))
                 volumes_removed.append(v_removed)
-            print(volumes_removed)
+            # print(volumes_removed)
             return np.min(volumes_removed)
 
         # def rank_objective(features, samples) -> float:
