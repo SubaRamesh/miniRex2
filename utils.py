@@ -3,10 +3,10 @@ import numpy as np
 import time
 
 
-def np_features(t):
+def np_features(t, dempref = False):
     # distance from landing pad at (0, 0)
     # weight should be negative
-    # import pdb; pdb.set_trace()
+    # print('getting np_features')
     def np_dist_from_landing_pad(x):
         return -15*np.exp(-np.sqrt(x[0]**2+x[1]**2))
 
@@ -54,36 +54,111 @@ def np_features(t):
                 0,
             ])
         lst_of_features.append(phi)
-        # phi_total = list(np.mean(lst_of_features, axis=0))
-        # # phi_total.append(np_path_length(t))
-        # phi_total.append(np_final_position(t))
-        # return np.array(phi_total)
+    
+    if dempref:
+        phi_total = list(np.mean(lst_of_features, axis=0))
+        # phi_total.append(np_path_length(t))
+        phi_total.append(np_final_position(t))
+        
+        return np.array(phi_total)
     return lst_of_features
 
 
-def watch(env, controls, seed: int = None):
+def watch(env, controls, seed: int = None, render:bool=True):
     if len(controls) > 0:
+        start = time.time()
         # mapping = {1: [0, -1], 2: [1, 0], 3: [0, 1], 0: [0, 0]}
         # controls_ = []
         # for i in range(len(controls)):
         #     controls_.append(mapping[controls[i][0]])
         
-        watch2(env, controls, seed)
+        features = watch2(env, controls, seed, render)
+        # print(reward)
+        end = time.time()
+        # print("Finished running game in " + str(end - start) + "s")
+        return features
+    return []
     
-def watch2(env, controls, seed:int=None, on_real_robot:bool=False):
+def watch2(env, controls, seed:int=None, render:bool=True):
     env.seed(seed)
     env.reset()
+    features = []
+    reward = 0
     
     for i in range(len(controls)):
-        env.render()
-        a = controls[i][0]
-        print(a)
-        results = env.step(a)
-        # print(f'{results[1]:.3f}')
-        #print(self.state)
-        frame_delay_ms = 20
-        time.sleep(frame_delay_ms/1000)\
+        if render:
+            frame_delay_ms = 0.1
+            time.sleep(frame_delay_ms/1000)
+            env.render()
+        a = controls[i]#[0]
+        a = int(np.floor(a))
+        # print(a)
+        try:
+            obser, r, done, info = env.step(a)
+            features.append(obser)
+            reward += r
             
-        if results[2]: # quit if game over
-            break
+            
+            if done: # quit if game over
+                print(f"{i}: {reward}")
+                break
+        except:
+            continue
+            # print(f"invalid action {a} --> {int(np.floor(a))}")
+        #print(self.state)
+            
     env.close()
+    
+    return features
+
+def dempref_run(env: gym.Env,  controls: np.ndarray, time_steps: int = 150, render: bool = False, seed: int = 0):
+    control_size = 1
+    c = np.array([[0.] * control_size] * time_steps)
+    num_intervals = len(controls)//control_size # 8
+    interval_length = time_steps//num_intervals # 18
+
+    assert interval_length * num_intervals == time_steps, f"Number of generated controls: {interval_length}, {num_intervals} must be divisible by total time steps: {time_steps}."
+
+    j = 0
+    for i in range(num_intervals):
+        c[i * interval_length: (i + 1) * interval_length] = [controls[j + i] for i in range(control_size)]
+        j += control_size
+
+    print(f"controls ({len(c)}): \n{[int(np.floor(x))for x in c]}")
+
+    env.seed(seed)
+    obser = env.reset()
+    s = [obser]
+    reward = 0
+    for i in range(time_steps):
+        try:
+            action = int(np.floor(c[i]))
+            if action < 0:
+                action = 0
+            elif action > 3:
+                action = 3
+            
+            results = env.step(action)
+            if render:
+                frame_delay_ms = 0
+                time.sleep(frame_delay_ms/1000)
+                env.render()
+        except:
+            print(f"Caught unstable simulation; skipping. Last control: {int(np.floor(c[i]))}")
+            return (None, None)
+            # return (None, None)
+        
+        obser = results[0]
+        reward += results[1]
+        s.append(obser)
+        if results[2]:
+            break
+    if len(s) <= time_steps:
+        c = c[:len(s), :]
+    else:
+        c = np.append(c, [np.zeros(control_size)], axis=0)
+        
+    print(f"reward: {reward}\n")
+    return (s, np.array([c]))
+
+    

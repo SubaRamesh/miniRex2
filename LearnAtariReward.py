@@ -43,13 +43,13 @@ def create_training_data(demonstrations, num_trajs, num_snippets, min_snippet_le
 
         max_traj_length = max(max_traj_length, len(traj_i), len(traj_j))
         if ti > tj:
-            label = 1
-        else:
             label = 0
+        else:
+            label = 1
         
         # import pdb;pdb.set_trace()
-        # training_obs.append((np_features(traj_i), np_features(traj_j)))
-        training_obs.append((traj_i, traj_j))
+        training_obs.append((np_features(traj_i), np_features(traj_j)))
+        # training_obs.append((traj_i, traj_j))
         training_labels.append(label)
 
     print("maximum traj length", max_traj_length)
@@ -62,7 +62,8 @@ class Net(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
         
-        self.fc2 = nn.Linear(input_dim, 1)
+        self.fc2 = nn.Linear(input_dim, 1, bias=False)
+        nn.init.uniform_(self.fc2.weight)
 
 
 
@@ -88,7 +89,7 @@ class Net(nn.Module):
 
 
 # Train the network
-def learn_reward(reward_network, optimizer, training_inputs, training_outputs, num_iter, l1_reg, checkpoint_dir):
+def learn_reward(reward_network, optimizer, training_inputs, training_outputs, testing_inputs, testing_outputs, num_iter, l1_reg, checkpoint_dir):
     #check if gpu available
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Assume that we are on a CUDA machine, then this should print a CUDA device:
@@ -126,13 +127,16 @@ def learn_reward(reward_network, optimizer, training_inputs, training_outputs, n
 
             #print stats to see if learning
             item_loss = loss.item()
-            cum_loss += item_loss
-            if i % 100 == 99:
-                print(i)
-                print("epoch {} loss {}".format(epoch, item_loss))
-                print(abs_rewards)
-                cum_loss = 0.0
-        print("check pointing")
+            # cum_loss += item_loss
+            # if i % 100 == 99:
+            #     print(i)
+            #     print("epoch {} loss {}".format(epoch, cum_loss/100))
+            #     print(abs_rewards)
+            #     cum_loss = 0.0
+        # print("check pointing")
+        train_acc = calc_accuracy(reward_network, training_inputs, training_outputs)
+        test_acc = calc_accuracy(reward_network, testing_inputs, testing_outputs)
+        print(f"epoch: {epoch}, train acc: {train_acc}, test_acc: {test_acc}")
         torch.save(reward_network.state_dict(), checkpoint_dir)
     print("finished training loss {}".format(item_loss))
 

@@ -4,7 +4,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import watch
+from utils import watch, dempref_run
 
 
 class Human(object):
@@ -65,7 +65,7 @@ class TerminalHuman(Human):
         self.type = type
         assert self.type == "pick_best" or self.type == "approx" or self.type == "rank"
 
-    def input(self, queries, on_real_robot=False):
+    def input(self, queries, dempref: bool = False):
         print("To view a trajectory, press a number: [1,...,%d]; when ready to select input 'done'" % (len(queries)))
         inp = ''
         while inp != 'done':
@@ -89,10 +89,16 @@ class TerminalHuman(Human):
                 print("Please input a number")
                 continue
             
-            # formatting from demos, should be list of [x]s
-            controls = queries[index - 1][0]
-            
-            watch(self.domain, controls, seed=0)
+            if dempref:
+                # formatting from demos, should be list of [x]s
+                controls = queries[index - 1]
+                # watch(self.domain, controls)
+                # print(f"controls length: {controls}")
+                dempref_run(self.domain, controls, render=True)
+            else:
+                # formatting from demos, should be list of [x]s
+                controls = queries[index - 1][0]
+                watch(self.domain, controls)
             
             self.domain.reset()
         print('\n')

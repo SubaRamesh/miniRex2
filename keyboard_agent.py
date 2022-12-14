@@ -70,13 +70,13 @@ def rollout(env):
         if window_still_open == False or done:
             controls.append([0])
             env.close()
-            return (False, states, controls)
+            return (False, states, controls, total_reward)
         # if done: break
         # if human_wants_restart: break
         # while human_sets_pause:
         #     env.render()
         #     time.sleep(0.1)
-        time.sleep(0.1)
+        time.sleep(0.01)
     print("timesteps %i reward %0.2f" % (total_timesteps, total_reward))
     return states, controls, total_reward
 
@@ -93,11 +93,11 @@ def play(env, n_runs, seed, save=False):
         env.render()
         env.unwrapped.viewer.window.on_key_press = key_press
         env.unwrapped.viewer.window.on_key_release = key_release
-        states, controls, total_reward = rollout(env)
+        window_still_open, states, controls, total_reward = rollout(env)
         if save:
             name = str(time.time())
-            with open('data/gym-' + str(name) + ".pickle", 'wb') as f:
-                pickle.dump((controls, states), f)
+            with open('data/demonstrations/gym-' + str(name) + ".pickle", 'wb') as f:
+                pickle.dump((controls, states, total_reward), f)
             names.append(name)
         else:
             names.append(states, controls, total_reward)
